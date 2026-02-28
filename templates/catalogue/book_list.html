@@ -1,87 +1,109 @@
 {% extends "base.html" %}
 
-{% block title %}Liste des livres{% endblock %}
+{% block title %}Livres{% endblock %}
 
 {% block content %}
+
 <section class="mb-6">
-    <h1 class="text-3xl font-bold text-brand-dark mb-1">Liste des livres</h1>
-    <p class="text-gray-500">{{ books|length }} livre{{ books|length|pluralize }} trouve{{ books|length|pluralize }}</p>
+    <h1 class="text-3xl font-bold text-brand-dark mb-1">Catalogue des livres</h1>
+    <p class="text-gray-500">{{ books|length }} resultat{{ books|length|pluralize }}</p>
 </section>
 
+<!-- formulaire de recherche et filtres -->
 <section class="bg-white rounded-xl shadow p-6 mb-6">
-    <form method="get" class="flex flex-wrap gap-4 items-end">
-        <div class="flex-1 min-w-[200px]">
-            <label for="q" class="block text-sm font-medium text-gray-600 mb-1">Rechercher (titre ou auteur)</label>
-            <input type="text" name="q" id="q" value="{{ query }}" placeholder="Titre, auteur, ISBN..."
-                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light">
+    <form method="get">
+        <div class="flex flex-wrap gap-4 items-end">
+
+            <!-- recherche textuelle -->
+            <div class="flex-1 min-w-[200px]">
+                <label for="q" class="block text-sm font-medium text-gray-600 mb-1">
+                    Recherche (titre, auteur, ISBN)
+                </label>
+                <input type="text" name="q" id="q" value="{{ query }}"
+                       placeholder="Rechercher..."
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light">
+            </div>
+
+            <!-- filtre genre -->
+            <div class="min-w-[140px]">
+                <label for="genre" class="block text-sm font-medium text-gray-600 mb-1">Genre</label>
+                <select name="genre" id="genre"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light">
+                    <option value="">Tous</option>
+                    {% for valeur, label in genre_choices %}
+                        <option value="{{ valeur }}" {% if selected_genre == valeur %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- filtre editeur -->
+            <div class="min-w-[140px]">
+                <label for="publisher" class="block text-sm font-medium text-gray-600 mb-1">Editeur</label>
+                <select name="publisher" id="publisher"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light">
+                    <option value="">Tous</option>
+                    {% for pub in publishers %}
+                        <option value="{{ pub.pk }}" {% if selected_publisher == pub.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ pub.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- filtre disponibilite -->
+            <div class="min-w-[130px]">
+                <label for="disponible" class="block text-sm font-medium text-gray-600 mb-1">Disponibilite</label>
+                <select name="disponible" id="disponible"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light">
+                    <option value="">Tous</option>
+                    <option value="1" {% if selected_availability == '1' %}selected{% endif %}>Disponible</option>
+                    <option value="0" {% if selected_availability == '0' %}selected{% endif %}>Indisponible</option>
+                </select>
+            </div>
+
+            <button type="submit" class="bg-brand-dark text-white px-6 py-2 rounded-lg hover:bg-brand-light transition-colors">
+                Filtrer
+            </button>
         </div>
-        <div class="min-w-[150px]">
-            <label for="genre" class="block text-sm font-medium text-gray-600 mb-1">Genre</label>
-            <select name="genre" id="genre"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light">
-                <option value="">Tous les genres</option>
-                {% for value, label in genre_choices %}
-                <option value="{{ value }}" {% if selected_genre == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="min-w-[150px]">
-            <label for="publisher" class="block text-sm font-medium text-gray-600 mb-1">Editeur</label>
-            <select name="publisher" id="publisher"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light">
-                <option value="">Tous les editeurs</option>
-                {% for pub in publishers %}
-                <option value="{{ pub.pk }}" {% if selected_publisher == pub.pk|stringformat:"s" %}selected{% endif %}>{{ pub.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="min-w-[140px]">
-            <label for="disponible" class="block text-sm font-medium text-gray-600 mb-1">Disponibilite</label>
-            <select name="disponible" id="disponible"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light">
-                <option value="">Tous</option>
-                <option value="1" {% if selected_availability == '1' %}selected{% endif %}>Disponible</option>
-                <option value="0" {% if selected_availability == '0' %}selected{% endif %}>Indisponible</option>
-            </select>
-        </div>
-        <button type="submit"
-                class="bg-brand-dark text-white px-6 py-2 rounded-lg hover:bg-brand-light transition-colors">
-            Rechercher
-        </button>
     </form>
 </section>
 
+<!-- liste des livres -->
 {% if books %}
 <div class="bg-white rounded-xl shadow overflow-hidden">
     <table class="w-full">
         <thead class="bg-brand-dark text-white">
             <tr>
-                <th class="px-6 py-4 text-left font-semibold">Titre</th>
-                <th class="px-6 py-4 text-left font-semibold">Auteur</th>
-                <th class="px-6 py-4 text-left font-semibold">Genre</th>
-                <th class="px-6 py-4 text-center font-semibold">Disponibilite</th>
+                <th class="px-6 py-4 text-left">Titre</th>
+                <th class="px-6 py-4 text-left">Auteur</th>
+                <th class="px-6 py-4 text-left">Genre</th>
+                <th class="px-6 py-4 text-center">Disponible</th>
             </tr>
         </thead>
         <tbody>
             {% for book in books %}
-            <tr class="border-b border-brand-beige/50 hover:bg-orange-50/50 transition-colors">
+            <tr class="border-b border-gray-100 hover:bg-orange-50 transition-colors">
                 <td class="px-6 py-3 font-medium">
-                    <a href="{% url 'catalogue:book_detail' book.pk %}" class="text-brand-dark hover:text-brand-light hover:underline">
+                    <a href="{% url 'catalogue:book_detail' book.pk %}" class="text-brand-dark hover:underline">
                         {{ book.title }}
                     </a>
-                    {% if book.isbn %}<span class="text-xs text-gray-400 ml-1">ISBN: {{ book.isbn }}</span>{% endif %}
+                    {% if book.isbn %}
+                        <span class="text-xs text-gray-400 block">{{ book.isbn }}</span>
+                    {% endif %}
                 </td>
                 <td class="px-6 py-3">
-                    <a href="{% url 'catalogue:author_detail' book.author.pk %}" class="text-gray-600 hover:text-brand-dark hover:underline">
+                    <a href="{% url 'catalogue:author_detail' book.author.pk %}" class="text-gray-600 hover:underline">
                         {{ book.author }}
                     </a>
                 </td>
                 <td class="px-6 py-3 text-gray-500">{{ book.get_genre_display }}</td>
                 <td class="px-6 py-3 text-center">
                     {% if book.available %}
-                    <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">Disponible</span>
+                        <span class="bg-green-100 text-green-700 text-xs font-medium px-3 py-1 rounded-full">Oui</span>
                     {% else %}
-                    <span class="bg-red-100 text-red-700 text-xs font-semibold px-3 py-1 rounded-full">Indisponible</span>
+                        <span class="bg-red-100 text-red-700 text-xs font-medium px-3 py-1 rounded-full">Non</span>
                     {% endif %}
                 </td>
             </tr>
@@ -91,7 +113,8 @@
 </div>
 {% else %}
 <div class="bg-white rounded-xl p-10 text-center shadow text-gray-500">
-    <p class="mb-2">Aucun livre trouve pour ces criteres.</p>
+    <p>Aucun livre trouve avec ces criteres.</p>
 </div>
 {% endif %}
+
 {% endblock %}

@@ -3,84 +3,104 @@
 {% block title %}{{ book.title }}{% endblock %}
 
 {% block content %}
-<section class="mb-6">
-    <a href="{% url 'catalogue:book_list' %}" class="text-brand-dark hover:text-brand-light text-sm">&larr; Retour a la liste des livres</a>
+
+<section class="mb-4">
+    <a href="{% url 'catalogue:book_list' %}" class="text-brand-dark hover:underline text-sm">&larr; Retour aux livres</a>
 </section>
 
 <div class="bg-white rounded-xl shadow p-8">
+
+    <!-- en-tete : titre + statut + bouton reservation -->
     <div class="flex items-start justify-between mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-brand-dark mb-2">{{ book.title }}</h1>
-            <p class="text-gray-500 text-lg">
-                par <a href="{% url 'catalogue:author_detail' book.author.pk %}" class="text-brand-dark hover:text-brand-light hover:underline">{{ book.author }}</a>
+            <h1 class="text-3xl font-bold text-brand-dark mb-1">{{ book.title }}</h1>
+            <p class="text-gray-500">
+                par <a href="{% url 'catalogue:author_detail' book.author.pk %}" class="text-brand-dark hover:underline">
+                    {{ book.author }}
+                </a>
             </p>
         </div>
+
         <div class="flex flex-col items-end gap-3">
+            <!-- badge disponibilite -->
             {% if book.available %}
-            <span class="bg-green-100 text-green-700 text-sm font-semibold px-4 py-2 rounded-full">Disponible</span>
+                <span class="bg-green-100 text-green-700 text-sm font-medium px-4 py-2 rounded-full">Disponible</span>
             {% else %}
-            <span class="bg-red-100 text-red-700 text-sm font-semibold px-4 py-2 rounded-full">Indisponible</span>
+                <span class="bg-red-100 text-red-700 text-sm font-medium px-4 py-2 rounded-full">Indisponible</span>
             {% endif %}
 
+            <!-- bouton de reservation -->
             {% if user.is_authenticated %}
                 {% if book.available %}
                     {% if user_has_reserved %}
-                    <span class="text-sm text-gray-500 italic">Deja reserve</span>
-                    <form method="post" action="{% url 'catalogue:cancel_reservation' book.pk %}">
-                        {% csrf_token %}
-                        <button type="submit" class="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm">
-                            Annuler la reservation
-                        </button>
-                    </form>
+                        <!-- l'user a deja reserve ce livre -->
+                        <p class="text-sm text-gray-400 italic">Deja reserve</p>
+                        <form method="post" action="{% url 'catalogue:cancel_reservation' book.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm">
+                                Annuler ma reservation
+                            </button>
+                        </form>
                     {% else %}
-                    <form method="post" action="{% url 'catalogue:reserve_book' book.pk %}">
-                        {% csrf_token %}
-                        <button type="submit" class="bg-brand-dark text-white px-5 py-2 rounded-lg hover:bg-brand-light transition-colors text-sm font-medium">
-                            Reserver ce livre
-                        </button>
-                    </form>
+                        <form method="post" action="{% url 'catalogue:reserve_book' book.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-brand-dark text-white px-5 py-2 rounded-lg hover:bg-brand-light transition-colors text-sm">
+                                Reserver
+                            </button>
+                        </form>
                     {% endif %}
                 {% endif %}
             {% else %}
-            <a href="{% url 'catalogue:login' %}?next={{ request.path }}" class="text-sm text-brand-dark hover:underline">
-                Connectez-vous pour reserver
-            </a>
+                <a href="{% url 'catalogue:login' %}?next={{ request.path }}" class="text-sm text-brand-dark hover:underline">
+                    Connectez-vous pour reserver
+                </a>
             {% endif %}
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div class="bg-orange-50/50 rounded-lg p-5">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Genre</h3>
-            <p class="text-lg text-brand-dark">{{ book.get_genre_display }}</p>
+    <!-- informations du livre -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="bg-orange-50 rounded-lg p-4">
+            <p class="text-xs text-gray-500 uppercase mb-1">Genre</p>
+            <p class="font-medium text-brand-dark">{{ book.get_genre_display }}</p>
         </div>
-        <div class="bg-orange-50/50 rounded-lg p-5">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Auteur</h3>
-            <p class="text-lg">
-                <a href="{% url 'catalogue:author_detail' book.author.pk %}" class="text-brand-dark hover:text-brand-light hover:underline">{{ book.author }}</a>
+
+        <div class="bg-orange-50 rounded-lg p-4">
+            <p class="text-xs text-gray-500 uppercase mb-1">Auteur</p>
+            <p class="font-medium">
+                <a href="{% url 'catalogue:author_detail' book.author.pk %}" class="text-brand-dark hover:underline">
+                    {{ book.author }}
+                </a>
             </p>
         </div>
+
         {% if book.publisher %}
-        <div class="bg-orange-50/50 rounded-lg p-5">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Editeur</h3>
-            <p class="text-lg">
-                <a href="{% url 'catalogue:publisher_detail' book.publisher.pk %}" class="text-brand-dark hover:text-brand-light hover:underline">{{ book.publisher.name }}</a>
+        <div class="bg-orange-50 rounded-lg p-4">
+            <p class="text-xs text-gray-500 uppercase mb-1">Editeur</p>
+            <p class="font-medium">
+                <a href="{% url 'catalogue:publisher_detail' book.publisher.pk %}" class="text-brand-dark hover:underline">
+                    {{ book.publisher.name }}
+                </a>
             </p>
         </div>
         {% endif %}
+
         {% if book.isbn %}
-        <div class="bg-orange-50/50 rounded-lg p-5">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">ISBN</h3>
-            <p class="text-lg text-brand-dark">{{ book.isbn }}</p>
+        <div class="bg-orange-50 rounded-lg p-4">
+            <p class="text-xs text-gray-500 uppercase mb-1">ISBN</p>
+            <p class="font-medium text-brand-dark">{{ book.isbn }}</p>
         </div>
         {% endif %}
     </div>
 
+    <!-- resume si disponible -->
     {% if book.summary %}
-    <div>
-        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Resume</h3>
+    <div class="border-t border-gray-100 pt-6">
+        <p class="text-xs text-gray-500 uppercase mb-2">Resume</p>
         <p class="text-gray-700 leading-relaxed">{{ book.summary }}</p>
     </div>
     {% endif %}
+
 </div>
+
 {% endblock %}
