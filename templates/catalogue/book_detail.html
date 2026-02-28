@@ -4,100 +4,82 @@
 
 {% block content %}
 
-<section class="mb-4">
-    <a href="{% url 'catalogue:book_list' %}" class="text-brand-dark hover:underline text-sm">&larr; Retour aux livres</a>
-</section>
+<a href="{% url 'catalogue:book_list' %}" class="text-brand-dark hover:underline text-sm">&larr; Retour</a>
 
-<div class="bg-white rounded-xl shadow p-8">
+<div class="bg-white rounded shadow p-6 mt-4">
 
-    <!-- en-tete : titre + statut + bouton reservation -->
-    <div class="flex items-start justify-between mb-6">
+    <div class="flex justify-between items-start mb-4">
         <div>
-            <h1 class="text-3xl font-bold text-brand-dark mb-1">{{ book.title }}</h1>
-            <p class="text-gray-500">
-                par <a href="{% url 'catalogue:author_detail' book.author.pk %}" class="text-brand-dark hover:underline">
-                    {{ book.author }}
-                </a>
+            <h1 class="text-2xl font-bold text-gray-800">{{ book.title }}</h1>
+            <p class="text-gray-500 mt-1">
+                par <a href="{% url 'catalogue:author_detail' book.author.pk %}" class="text-brand-dark hover:underline">{{ book.author }}</a>
             </p>
         </div>
-
-        <div class="flex flex-col items-end gap-3">
-            <!-- badge disponibilite -->
+        <div class="text-right">
             {% if book.available %}
-                <span class="bg-green-100 text-green-700 text-sm font-medium px-4 py-2 rounded-full">Disponible</span>
+                <span class="text-green-600 font-medium">Disponible</span>
             {% else %}
-                <span class="bg-red-100 text-red-700 text-sm font-medium px-4 py-2 rounded-full">Indisponible</span>
+                <span class="text-red-500 font-medium">Indisponible</span>
             {% endif %}
 
-            <!-- bouton de reservation -->
-            {% if user.is_authenticated %}
-                {% if book.available %}
-                    {% if user_has_reserved %}
-                        <!-- l'user a deja reserve ce livre -->
-                        <p class="text-sm text-gray-400 italic">Deja reserve</p>
-                        <form method="post" action="{% url 'catalogue:cancel_reservation' book.pk %}">
-                            {% csrf_token %}
-                            <button type="submit" class="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm">
-                                Annuler ma reservation
-                            </button>
-                        </form>
-                    {% else %}
-                        <form method="post" action="{% url 'catalogue:reserve_book' book.pk %}">
-                            {% csrf_token %}
-                            <button type="submit" class="bg-brand-dark text-white px-5 py-2 rounded-lg hover:bg-brand-light transition-colors text-sm">
-                                Reserver
-                            </button>
-                        </form>
+            <!-- bouton reservation -->
+            <div class="mt-2">
+                {% if user.is_authenticated %}
+                    {% if book.available %}
+                        {% if user_has_reserved %}
+                            <p class="text-sm text-gray-400 mb-1">Deja reserve</p>
+                            <form method="post" action="{% url 'catalogue:cancel_reservation' book.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-red-500 text-white px-4 py-1.5 rounded text-sm hover:bg-red-600">
+                                    Annuler ma reservation
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{% url 'catalogue:reserve_book' book.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-brand-dark text-white px-4 py-1.5 rounded text-sm hover:bg-brand-light">
+                                    Reserver ce livre
+                                </button>
+                            </form>
+                        {% endif %}
                     {% endif %}
+                {% else %}
+                    <a href="{% url 'catalogue:login' %}?next={{ request.path }}" class="text-sm text-brand-dark hover:underline">
+                        Connexion pour reserver
+                    </a>
                 {% endif %}
-            {% else %}
-                <a href="{% url 'catalogue:login' %}?next={{ request.path }}" class="text-sm text-brand-dark hover:underline">
-                    Connectez-vous pour reserver
-                </a>
-            {% endif %}
+            </div>
         </div>
     </div>
 
-    <!-- informations du livre -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div class="bg-orange-50 rounded-lg p-4">
-            <p class="text-xs text-gray-500 uppercase mb-1">Genre</p>
-            <p class="font-medium text-brand-dark">{{ book.get_genre_display }}</p>
-        </div>
-
-        <div class="bg-orange-50 rounded-lg p-4">
-            <p class="text-xs text-gray-500 uppercase mb-1">Auteur</p>
-            <p class="font-medium">
-                <a href="{% url 'catalogue:author_detail' book.author.pk %}" class="text-brand-dark hover:underline">
-                    {{ book.author }}
-                </a>
-            </p>
-        </div>
-
+    <!-- details -->
+    <table class="text-sm w-full mb-4">
+        <tr class="border-b border-gray-100">
+            <td class="py-2 text-gray-500 w-32">Genre</td>
+            <td class="py-2">{{ book.get_genre_display }}</td>
+        </tr>
         {% if book.publisher %}
-        <div class="bg-orange-50 rounded-lg p-4">
-            <p class="text-xs text-gray-500 uppercase mb-1">Editeur</p>
-            <p class="font-medium">
+        <tr class="border-b border-gray-100">
+            <td class="py-2 text-gray-500">Editeur</td>
+            <td class="py-2">
                 <a href="{% url 'catalogue:publisher_detail' book.publisher.pk %}" class="text-brand-dark hover:underline">
                     {{ book.publisher.name }}
                 </a>
-            </p>
-        </div>
+            </td>
+        </tr>
         {% endif %}
-
         {% if book.isbn %}
-        <div class="bg-orange-50 rounded-lg p-4">
-            <p class="text-xs text-gray-500 uppercase mb-1">ISBN</p>
-            <p class="font-medium text-brand-dark">{{ book.isbn }}</p>
-        </div>
+        <tr class="border-b border-gray-100">
+            <td class="py-2 text-gray-500">ISBN</td>
+            <td class="py-2">{{ book.isbn }}</td>
+        </tr>
         {% endif %}
-    </div>
+    </table>
 
-    <!-- resume si disponible -->
     {% if book.summary %}
-    <div class="border-t border-gray-100 pt-6">
-        <p class="text-xs text-gray-500 uppercase mb-2">Resume</p>
-        <p class="text-gray-700 leading-relaxed">{{ book.summary }}</p>
+    <div>
+        <p class="text-sm text-gray-500 mb-1">Resume :</p>
+        <p class="text-gray-700 text-sm leading-relaxed">{{ book.summary }}</p>
     </div>
     {% endif %}
 

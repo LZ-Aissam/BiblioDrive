@@ -1,60 +1,43 @@
 {% extends "base.html" %}
 
-{% block title %}Accueil{% endblock %}
+{% block title %}Accueil - BiblioDrive{% endblock %}
 
 {% block content %}
 
-<!-- section hero -->
-<section class="bg-gradient-to-br from-brand-dark to-brand-light text-white rounded-xl p-10 text-center mb-8">
-    <h1 class="text-3xl font-bold mb-3">Bienvenue a la Bibliotheque Les Furtifs</h1>
-    <p class="text-lg opacity-90 max-w-xl mx-auto">
-        Votre bibliotheque communautaire au coeur de Brest.
-        Decouvrez notre collection de livres et ressources educatives.
-    </p>
-    {% if not user.is_authenticated %}
-    <div class="mt-6 flex gap-4 justify-center">
-        <a href="{% url 'catalogue:register' %}" class="bg-white text-brand-dark font-semibold px-6 py-2 rounded-lg hover:bg-brand-beige transition-colors">
-            S'inscrire
-        </a>
-        <a href="{% url 'catalogue:login' %}" class="border border-white text-white px-6 py-2 rounded-lg hover:bg-white/10 transition-colors">
-            Se connecter
-        </a>
-    </div>
-    {% endif %}
-</section>
+<div class="bg-brand-dark text-white p-8 rounded mb-6 text-center">
+    <h1 class="text-2xl font-bold mb-2">Bienvenue sur BiblioDrive</h1>
+    <p class="text-brand-beige">Bibliotheque communautaire Les Furtifs - Brest</p>
+</div>
 
-<!-- tableau de bord avec les comptages -->
-<section>
-    <h2 class="text-xl font-bold text-brand-dark mb-4">Tableau de bord</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+<!-- stats -->
+<h2 class="text-lg font-bold text-gray-700 mb-3">Tableau de bord</h2>
+<div class="grid grid-cols-3 gap-4 mb-6">
 
-        <a href="{% url 'catalogue:author_list' %}" class="bg-white rounded-xl p-8 text-center shadow hover:-translate-y-1 hover:shadow-lg border-2 border-transparent hover:border-brand-light transition-all no-underline text-gray-800">
-            <div class="text-4xl mb-2">&#9998;</div>
-            <div class="text-4xl font-bold text-brand-dark">{{ nb_authors }}</div>
-            <div class="text-gray-500 mt-1">Auteurs</div>
-        </a>
+    <a href="{% url 'catalogue:author_list' %}" class="bg-white p-6 rounded shadow text-center no-underline text-gray-800 hover:bg-gray-50">
+        <div class="text-3xl font-bold text-brand-dark">{{ nb_authors }}</div>
+        <div class="text-gray-500 text-sm mt-1">Auteurs</div>
+    </a>
 
-        <a href="{% url 'catalogue:book_list' %}" class="bg-white rounded-xl p-8 text-center shadow hover:-translate-y-1 hover:shadow-lg border-2 border-transparent hover:border-brand-light transition-all no-underline text-gray-800">
-            <div class="text-4xl mb-2">&#128214;</div>
-            <div class="text-4xl font-bold text-brand-dark">{{ nb_books }}</div>
-            <div class="text-gray-500 mt-1">Livres</div>
-        </a>
+    <a href="{% url 'catalogue:book_list' %}" class="bg-white p-6 rounded shadow text-center no-underline text-gray-800 hover:bg-gray-50">
+        <div class="text-3xl font-bold text-brand-dark">{{ nb_books }}</div>
+        <div class="text-gray-500 text-sm mt-1">Livres</div>
+    </a>
 
-        <a href="{% url 'catalogue:publisher_list' %}" class="bg-white rounded-xl p-8 text-center shadow hover:-translate-y-1 hover:shadow-lg border-2 border-transparent hover:border-brand-light transition-all no-underline text-gray-800">
-            <div class="text-4xl mb-2">&#127970;</div>
-            <div class="text-4xl font-bold text-brand-dark">{{ nb_publishers }}</div>
-            <div class="text-gray-500 mt-1">Editeurs</div>
-        </a>
+    <a href="{% url 'catalogue:publisher_list' %}" class="bg-white p-6 rounded shadow text-center no-underline text-gray-800 hover:bg-gray-50">
+        <div class="text-3xl font-bold text-brand-dark">{{ nb_publishers }}</div>
+        <div class="text-gray-500 text-sm mt-1">Editeurs</div>
+    </a>
 
-    </div>
+</div>
 
-    {% if user.is_authenticated %}
-    <div class="mt-6">
-        <a href="{% url 'catalogue:my_reservations' %}" class="inline-block bg-brand-dark text-white px-6 py-3 rounded-lg hover:bg-brand-light transition-colors">
-            Voir mes reservations
-        </a>
-    </div>
-    {% endif %}
-</section>
+{% if user.is_authenticated %}
+<a href="{% url 'catalogue:my_reservations' %}" class="inline-block bg-brand-dark text-white px-4 py-2 rounded hover:bg-brand-light">
+    Voir mes reservations
+</a>
+{% else %}
+<div class="bg-white p-4 rounded shadow text-sm text-gray-600">
+    <a href="{% url 'catalogue:login' %}" class="text-brand-dark font-medium hover:underline">Connectez-vous</a> pour reserver des livres.
+</div>
+{% endif %}
 
 {% endblock %}

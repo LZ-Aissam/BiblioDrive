@@ -4,65 +4,53 @@
 
 {% block content %}
 
-<section class="mb-6">
-    <h1 class="text-3xl font-bold text-brand-dark mb-1">Liste des auteurs</h1>
-    <p class="text-gray-500">{{ authors|length }} auteur{{ authors|length|pluralize }} au total</p>
-</section>
+<h1 class="text-2xl font-bold text-gray-800 mb-4">Liste des auteurs</h1>
 
-<!-- formulaire de recherche -->
-<section class="bg-white rounded-xl shadow p-6 mb-6">
-    <form method="get">
-        <div class="flex gap-4 items-end">
-            <div class="flex-1">
-                <label for="q" class="block text-sm font-medium text-gray-600 mb-1">Rechercher</label>
-                <input type="text" name="q" id="q" value="{{ query }}"
-                       placeholder="Nom de l'auteur..."
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light">
-            </div>
-            <button type="submit" class="bg-brand-dark text-white px-6 py-2 rounded-lg hover:bg-brand-light transition-colors">
-                Rechercher
-            </button>
-            {% if query %}
-            <a href="{% url 'catalogue:author_list' %}" class="text-sm text-gray-500 hover:text-brand-dark py-2">
-                Effacer
-            </a>
-            {% endif %}
+<div class="bg-white p-4 rounded shadow mb-4">
+    <form method="get" class="flex gap-3 items-end">
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">Rechercher</label>
+            <input type="text" name="q" value="{{ query }}" placeholder="Nom de l'auteur..."
+                   class="border border-gray-300 rounded px-3 py-1.5 text-sm w-64">
         </div>
+        <button type="submit" class="bg-brand-dark text-white px-4 py-1.5 rounded text-sm hover:bg-brand-light">
+            OK
+        </button>
+        {% if query %}
+            <a href="{% url 'catalogue:author_list' %}" class="text-sm text-gray-400 hover:underline py-1.5">Effacer</a>
+        {% endif %}
     </form>
-</section>
+</div>
 
-<!-- tableau des auteurs -->
+<p class="text-sm text-gray-500 mb-3">{{ authors|length }} auteur{{ authors|length|pluralize }} trouve{{ authors|length|pluralize }}</p>
+
 {% if authors %}
-<div class="bg-white rounded-xl shadow overflow-hidden">
-    <table class="w-full">
+<div class="bg-white rounded shadow">
+    <table class="w-full text-sm">
         <thead class="bg-brand-dark text-white">
             <tr>
-                <th class="px-6 py-4 text-left">ID</th>
-                <th class="px-6 py-4 text-left">Nom</th>
-                <th class="px-6 py-4 text-left">Annee naissance</th>
-                <th class="px-6 py-4 text-left">Nb livres</th>
+                <th class="px-4 py-3 text-left">Nom</th>
+                <th class="px-4 py-3 text-left">Naissance</th>
+                <th class="px-4 py-3 text-left">Livres</th>
             </tr>
         </thead>
         <tbody>
             {% for author in authors %}
-            <tr class="border-b border-gray-100 hover:bg-orange-50 transition-colors">
-                <td class="px-6 py-3 text-gray-400 text-sm">{{ author.id }}</td>
-                <td class="px-6 py-3 font-medium">
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                <td class="px-4 py-2">
                     <a href="{% url 'catalogue:author_detail' author.pk %}" class="text-brand-dark hover:underline">
                         {{ author.author }}
                     </a>
                 </td>
-                <td class="px-6 py-3 text-gray-500">{{ author.year_born|default:"-" }}</td>
-                <td class="px-6 py-3 text-gray-500">{{ author.books.count }}</td>
+                <td class="px-4 py-2 text-gray-600">{{ author.year_born|default:"-" }}</td>
+                <td class="px-4 py-2 text-gray-600">{{ author.books.count }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 {% else %}
-<div class="bg-white rounded-xl p-10 text-center shadow text-gray-500">
-    <p>Aucun auteur trouve.</p>
-</div>
+<p class="text-gray-500 bg-white p-6 rounded shadow text-center">Aucun auteur.</p>
 {% endif %}
 
 {% endblock %}

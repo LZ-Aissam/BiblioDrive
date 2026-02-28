@@ -4,72 +4,54 @@
 
 {% block content %}
 
-<section class="mb-4">
-    <a href="{% url 'catalogue:author_list' %}" class="text-brand-dark hover:underline text-sm">&larr; Retour aux auteurs</a>
-</section>
+<a href="{% url 'catalogue:author_list' %}" class="text-brand-dark hover:underline text-sm">&larr; Retour aux auteurs</a>
 
-<!-- infos de l'auteur -->
-<div class="bg-white rounded-xl shadow p-8 mb-6">
-    <h1 class="text-3xl font-bold text-brand-dark mb-2">{{ author.author }}</h1>
+<div class="bg-white rounded shadow p-6 mt-4 mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">{{ author.author }}</h1>
     {% if author.year_born %}
-        <p class="text-gray-500">Annee de naissance : {{ author.year_born }}</p>
-    {% else %}
-        <p class="text-gray-400 text-sm">Annee de naissance non renseignee</p>
+        <p class="text-gray-500 text-sm">Ne en {{ author.year_born }}</p>
     {% endif %}
 </div>
 
-<!-- livres de cet auteur -->
-<section>
-    <h2 class="text-xl font-bold text-brand-dark mb-4">
-        Livres ({{ books|length }})
-    </h2>
+<h2 class="text-lg font-bold text-gray-700 mb-3">Livres ({{ books|length }})</h2>
 
-    {% if books %}
-    <div class="bg-white rounded-xl shadow overflow-hidden">
-        <table class="w-full">
-            <thead class="bg-brand-dark text-white">
-                <tr>
-                    <th class="px-6 py-4 text-left">Titre</th>
-                    <th class="px-6 py-4 text-left">Genre</th>
-                    <th class="px-6 py-4 text-left">Editeur</th>
-                    <th class="px-6 py-4 text-center">Dispo</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for livre in books %}
-                <tr class="border-b border-gray-100 hover:bg-orange-50 transition-colors">
-                    <td class="px-6 py-3 font-medium">
-                        <a href="{% url 'catalogue:book_detail' livre.pk %}" class="text-brand-dark hover:underline">
-                            {{ livre.title }}
-                        </a>
-                    </td>
-                    <td class="px-6 py-3 text-gray-500">{{ livre.get_genre_display }}</td>
-                    <td class="px-6 py-3 text-gray-500">
-                        {% if livre.publisher %}
-                            <a href="{% url 'catalogue:publisher_detail' livre.publisher.pk %}" class="hover:underline">
-                                {{ livre.publisher.name }}
-                            </a>
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-3 text-center">
-                        {% if livre.available %}
-                            <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">Disponible</span>
-                        {% else %}
-                            <span class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full">Indisponible</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="bg-white rounded-xl p-8 text-center shadow text-gray-500">
-        <p>Aucun livre pour cet auteur.</p>
-    </div>
-    {% endif %}
-</section>
+{% if books %}
+<div class="bg-white rounded shadow">
+    <table class="w-full text-sm">
+        <thead class="bg-brand-dark text-white">
+            <tr>
+                <th class="px-4 py-3 text-left">Titre</th>
+                <th class="px-4 py-3 text-left">Genre</th>
+                <th class="px-4 py-3 text-left">Editeur</th>
+                <th class="px-4 py-3 text-left">Dispo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for livre in books %}
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                <td class="px-4 py-2">
+                    <a href="{% url 'catalogue:book_detail' livre.pk %}" class="text-brand-dark hover:underline">{{ livre.title }}</a>
+                </td>
+                <td class="px-4 py-2 text-gray-600">{{ livre.get_genre_display }}</td>
+                <td class="px-4 py-2 text-gray-600">
+                    {% if livre.publisher %}
+                        <a href="{% url 'catalogue:publisher_detail' livre.publisher.pk %}" class="hover:underline">{{ livre.publisher.name }}</a>
+                    {% else %}-{% endif %}
+                </td>
+                <td class="px-4 py-2">
+                    {% if livre.available %}
+                        <span class="text-green-600">Oui</span>
+                    {% else %}
+                        <span class="text-red-500">Non</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-gray-500">Pas de livres pour cet auteur.</p>
+{% endif %}
 
 {% endblock %}

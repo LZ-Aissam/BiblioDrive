@@ -4,88 +4,66 @@
 
 {% block content %}
 
-<section class="mb-4">
-    <a href="{% url 'catalogue:publisher_list' %}" class="text-brand-dark hover:underline text-sm">&larr; Retour aux editeurs</a>
-</section>
+<a href="{% url 'catalogue:publisher_list' %}" class="text-brand-dark hover:underline text-sm">&larr; Retour</a>
 
-<!-- infos de l'editeur -->
-<div class="bg-white rounded-xl shadow p-8 mb-6">
-    <h1 class="text-3xl font-bold text-brand-dark mb-4">{{ publisher.name }}</h1>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+<div class="bg-white rounded shadow p-6 mt-4 mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 mb-3">{{ publisher.name }}</h1>
+    <table class="text-sm">
         {% if publisher.company_name %}
-        <div><span class="font-medium text-gray-700">Raison sociale :</span> {{ publisher.company_name }}</div>
+        <tr><td class="text-gray-500 pr-4 py-1">Raison sociale</td><td>{{ publisher.company_name }}</td></tr>
         {% endif %}
         {% if publisher.address %}
-        <div><span class="font-medium text-gray-700">Adresse :</span> {{ publisher.address }}</div>
+        <tr><td class="text-gray-500 pr-4 py-1">Adresse</td><td>{{ publisher.address }}</td></tr>
         {% endif %}
         {% if publisher.city %}
-        <div>
-            <span class="font-medium text-gray-700">Ville :</span>
-            {{ publisher.city }}{% if publisher.zip_code %} ({{ publisher.zip_code }}){% endif %}
-        </div>
+        <tr><td class="text-gray-500 pr-4 py-1">Ville</td><td>{{ publisher.city }} {% if publisher.zip_code %}({{ publisher.zip_code }}){% endif %}</td></tr>
         {% endif %}
         {% if publisher.telephone %}
-        <div><span class="font-medium text-gray-700">Tel :</span> {{ publisher.telephone }}</div>
+        <tr><td class="text-gray-500 pr-4 py-1">Tel</td><td>{{ publisher.telephone }}</td></tr>
         {% endif %}
-        {% if publisher.fax %}
-        <div><span class="font-medium text-gray-700">Fax :</span> {{ publisher.fax }}</div>
-        {% endif %}
-    </div>
-
+    </table>
     {% if publisher.comments %}
-    <div class="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600">
-        {{ publisher.comments }}
-    </div>
+        <p class="text-sm text-gray-600 mt-3 border-t pt-3">{{ publisher.comments }}</p>
     {% endif %}
 </div>
 
-<!-- livres de cet editeur -->
-<section>
-    <h2 class="text-xl font-bold text-brand-dark mb-4">Livres publies ({{ books|length }})</h2>
+<h2 class="text-lg font-bold text-gray-700 mb-3">Livres ({{ books|length }})</h2>
 
-    {% if books %}
-    <div class="bg-white rounded-xl shadow overflow-hidden">
-        <table class="w-full">
-            <thead class="bg-brand-dark text-white">
-                <tr>
-                    <th class="px-6 py-4 text-left">Titre</th>
-                    <th class="px-6 py-4 text-left">Auteur</th>
-                    <th class="px-6 py-4 text-left">Genre</th>
-                    <th class="px-6 py-4 text-center">Dispo</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for livre in books %}
-                <tr class="border-b border-gray-100 hover:bg-orange-50 transition-colors">
-                    <td class="px-6 py-3 font-medium">
-                        <a href="{% url 'catalogue:book_detail' livre.pk %}" class="text-brand-dark hover:underline">
-                            {{ livre.title }}
-                        </a>
-                    </td>
-                    <td class="px-6 py-3">
-                        <a href="{% url 'catalogue:author_detail' livre.author.pk %}" class="text-gray-600 hover:underline">
-                            {{ livre.author }}
-                        </a>
-                    </td>
-                    <td class="px-6 py-3 text-gray-500">{{ livre.get_genre_display }}</td>
-                    <td class="px-6 py-3 text-center">
-                        {% if livre.available %}
-                            <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">Oui</span>
-                        {% else %}
-                            <span class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full">Non</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="bg-white rounded-xl p-8 text-center shadow text-gray-500">
-        <p>Pas de livres pour cet editeur.</p>
-    </div>
-    {% endif %}
-</section>
+{% if books %}
+<div class="bg-white rounded shadow">
+    <table class="w-full text-sm">
+        <thead class="bg-brand-dark text-white">
+            <tr>
+                <th class="px-4 py-3 text-left">Titre</th>
+                <th class="px-4 py-3 text-left">Auteur</th>
+                <th class="px-4 py-3 text-left">Genre</th>
+                <th class="px-4 py-3 text-left">Dispo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for livre in books %}
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                <td class="px-4 py-2">
+                    <a href="{% url 'catalogue:book_detail' livre.pk %}" class="text-brand-dark hover:underline">{{ livre.title }}</a>
+                </td>
+                <td class="px-4 py-2 text-gray-600">
+                    <a href="{% url 'catalogue:author_detail' livre.author.pk %}" class="hover:underline">{{ livre.author }}</a>
+                </td>
+                <td class="px-4 py-2 text-gray-600">{{ livre.get_genre_display }}</td>
+                <td class="px-4 py-2">
+                    {% if livre.available %}
+                        <span class="text-green-600">Oui</span>
+                    {% else %}
+                        <span class="text-red-500">Non</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-gray-500">Pas de livres pour cet editeur.</p>
+{% endif %}
 
 {% endblock %}
