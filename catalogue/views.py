@@ -2,7 +2,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.contrib import messages
-from django.db.models import Q
 
 from .models import Author, Book, Publisher, Reservation, GENRE_CHOICES
 from .forms import RegisterForm
@@ -39,8 +38,7 @@ def author_list(request):
 
 # page detail d'un auteur avec la liste de ses livres
 def author_detail(request, pk):
-    author = get_object_or_404(Author, pk=pk)
-    # recuperer tous les livres de cet auteur
+    author = Author.objects.get(id=pk)
     livres = author.books.all()
 
     return render(request, 'catalogue/author_detail.html', {
@@ -54,11 +52,8 @@ def publisher_list(request):
     query = request.GET.get('q', '')
     publishers = Publisher.objects.all()
 
-    # recherche par nom ou par ville
     if query:
-        publishers = publishers.filter(
-            Q(name__icontains=query) | Q(city__icontains=query)
-        )
+        publishers = publishers.filter(name__icontains=query)
 
     return render(request, 'catalogue/publisher_list.html', {
         'publishers': publishers,
@@ -68,8 +63,8 @@ def publisher_list(request):
 
 # detail d'un editeur avec ses livres
 def publisher_detail(request, pk):
-    publisher = get_object_or_404(Publisher, pk=pk)
-    livres = publisher.books.select_related('author').all()
+    publisher = Publisher.objects.get(id=pk)
+    livres = publisher.books.all()
 
     return render(request, 'catalogue/publisher_detail.html', {
         'publisher': publisher,
@@ -77,23 +72,18 @@ def publisher_detail(request, pk):
     })
 
 
-# liste des livres avec plusieurs filtres
+# liste des livres avec filtres
 def book_list(request):
-    # on recupere tous les parametres de recherche depuis l'URL
     query = request.GET.get('q', '')
     genre = request.GET.get('genre', '')
     availability = request.GET.get('disponible', '')
     publisher_id = request.GET.get('publisher', '')
 
-    books = Book.objects.select_related('author', 'publisher').all()
+    books = Book.objects.all()
 
-    # filtre par titre, nom auteur ou isbn
+    # filtre par titre
     if query:
-        books = books.filter(
-            Q(title__icontains=query) |
-            Q(author__author__icontains=query) |
-            Q(isbn__icontains=query)
-        )
+        books = books.filter(title__icontains=query)
 
     if genre:
         books = books.filter(genre=genre)
@@ -105,9 +95,8 @@ def book_list(request):
         books = books.filter(available=False)
 
     if publisher_id:
-        books = books.filter(publisher__pk=publisher_id)
+        books = books.filter(publisher__id=publisher_id)
 
-    # pour remplir le select des editeurs dans le formulaire
     tous_editeurs = Publisher.objects.all()
 
     # print(books.query)  # debug
@@ -125,9 +114,10 @@ def book_list(request):
 
 # detail d'un livre
 def book_detail(request, pk):
-    book = get_object_or_404(Book.objects.select_related('author', 'publisher'), pk=pk)
+    book = get_object_or_404(Book, id=pk)
+    book.author  # on accede a l'auteur pour l'afficher
+    book.publisher  # idem pour l'editeur
 
-    # on verifie si l'utilisateur a deja reserve ce livre
     user_has_reserved = False
     if request.user.is_authenticated:
         nb = Reservation.objects.filter(user=request.user, book=book).count()
@@ -143,17 +133,11 @@ def book_detail(request, pk):
 # reserver un livre (utilisateur connecte seulement)
 @login_required
 def reserve_book(request, pk):
-    book = get_object_or_404(Book, pk=pk)
+    book = get_object_or_404(Book, id=pk)
 
     # verifier que le livre est disponible
     if not book.available:
         messages.error(request, "Ce livre n'est pas disponible.")
-        return redirect('catalogue:book_detail', pk=pk)
-
-    # verifier que l'user n'a pas deja reserve ce livre
-    deja_reserve = Reservation.objects.filter(user=request.user, book=book).exists()
-    if deja_reserve:
-        messages.warning(request, "Vous avez deja reserve ce livre.")
         return redirect('catalogue:book_detail', pk=pk)
 
     # max 5 reservations par utilisateur (exigence fonctionnelle)
@@ -171,18 +155,17 @@ def reserve_book(request, pk):
 # annuler une reservation
 @login_required
 def cancel_reservation(request, pk):
-    # on s'assure que la reservation appartient bien a cet utilisateur
     reservation = get_object_or_404(Reservation, book__pk=pk, user=request.user)
     titre = reservation.book.title
     reservation.delete()
-    messages.success(request, 'Reservation de "' + titre + '" annulee.')
+    messages.success(request, 'Reservation annulee.')
     return redirect('catalogue:my_reservations')
 
 
 # voir mes reservations en cours
 @login_required
 def my_reservations(request):
-    reservations = Reservation.objects.filter(user=request.user).select_related('book', 'book__author')
+    reservations = Reservation.objects.filter(user=request.user)
     return render(request, 'catalogue/my_reservations.html', {
         'reservations': reservations,
     })

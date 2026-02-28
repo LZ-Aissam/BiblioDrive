@@ -20,7 +20,6 @@ class Publisher(models.Model):
         verbose_name_plural = "Editeurs"
         ordering = ['name']
 
-    # pour afficher le nom dans l'admin django
     def __str__(self):
         return self.name
 
@@ -59,9 +58,7 @@ GENRE_CHOICES = [
 # Modele principal : le livre
 class Book(models.Model):
     title = models.CharField(max_length=200, verbose_name="Titre")
-    # un livre appartient a un auteur, si on supprime l'auteur ses livres sont supprimes aussi
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books', verbose_name="Auteur")
-    # l'editeur est optionnel (nullable)
     publisher = models.ForeignKey(Publisher, on_delete=models.SET_NULL, null=True, blank=True, related_name='books', verbose_name="Editeur")
     isbn = models.CharField(max_length=20, blank=True)
     summary = models.TextField(verbose_name="Resume", blank=True)
@@ -79,7 +76,6 @@ class Book(models.Model):
 
 # Modele pour les reservations
 # Un utilisateur peut avoir au maximum 5 reservations en meme temps
-# source : cahier des charges section "Reserver un livre"
 class Reservation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reservations')
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='reservations')
@@ -88,8 +84,6 @@ class Reservation(models.Model):
     class Meta:
         verbose_name = "Reservation"
         verbose_name_plural = "Reservations"
-        # empeche un user de reserver le meme livre 2 fois
-        unique_together = ('user', 'book')
         ordering = ['-date_reserved']
 
     def __str__(self):

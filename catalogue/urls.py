@@ -1,4 +1,4 @@
-from django.urls import path, reverse_lazy
+from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 
@@ -6,7 +6,6 @@ app_name = 'catalogue'
 
 # toutes les URLs de l'application catalogue
 urlpatterns = [
-    # accueil
     path('', views.home, name='home'),
 
     # auteurs
@@ -32,6 +31,6 @@ urlpatterns = [
     path('inscription/', views.register_view, name='register'),
     path('changer-mdp/', auth_views.PasswordChangeView.as_view(
         template_name='catalogue/change_password.html',
-        success_url=reverse_lazy('catalogue:home')
+        success_url='/'
     ), name='change_password'),
 ]
