@@ -1,13 +1,14 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.contrib import messages
+from django.shortcuts import get_object_or_404
 
 from .models import Author, Book, Publisher, Reservation, GENRE_CHOICES
 from .forms import RegisterForm
 
 
-# page d'accueil : affiche les stats generales
+# page d'accueil
 def home(request):
     nb_authors = Author.objects.count()
     nb_books = Book.objects.count()
@@ -21,7 +22,7 @@ def home(request):
     return render(request, 'catalogue/home.html', context)
 
 
-# liste de tous les auteurs avec recherche par nom
+# liste des auteurs
 def author_list(request):
     query = request.GET.get('q', '')
     authors = Author.objects.all()
@@ -29,16 +30,20 @@ def author_list(request):
     if query:
         authors = authors.filter(author__icontains=query)
 
-    context = {
+    return render(request, 'catalogue/author_list.html', {
         'authors': authors,
         'query': query,
-    }
-    return render(request, 'catalogue/author_list.html', context)
+    })
 
 
-# page detail d'un auteur avec la liste de ses livres
+# detail d'un auteur
 def author_detail(request, pk):
-    author = Author.objects.get(id=pk)
+    try:
+        author = Author.objects.get(id=pk)
+    except Author.DoesNotExist:
+        messages.error(request, "Auteur introuvable.")
+        return redirect('catalogue:author_list')
+
     livres = author.books.all()
 
     return render(request, 'catalogue/author_detail.html', {
@@ -61,9 +66,14 @@ def publisher_list(request):
     })
 
 
-# detail d'un editeur avec ses livres
+# detail d'un editeur
 def publisher_detail(request, pk):
-    publisher = Publisher.objects.get(id=pk)
+    try:
+        publisher = Publisher.objects.get(id=pk)
+    except Publisher.DoesNotExist:
+        messages.error(request, "Editeur introuvable.")
+        return redirect('catalogue:publisher_list')
+
     livres = publisher.books.all()
 
     return render(request, 'catalogue/publisher_detail.html', {
@@ -81,14 +91,16 @@ def book_list(request):
 
     books = Book.objects.all()
 
-    # filtre par titre
+    # recherche par titre ou par auteur
     if query:
-        books = books.filter(title__icontains=query)
+        from django.db.models import Q  # import ici car j'avais oublie en haut
+        books = books.filter(
+            Q(title__icontains=query) | Q(author__author__icontains=query)
+        )
 
     if genre:
         books = books.filter(genre=genre)
 
-    # disponible = 1, indisponible = 0
     if availability == '1':
         books = books.filter(available=True)
     elif availability == '0':
@@ -115,9 +127,8 @@ def book_list(request):
 # detail d'un livre
 def book_detail(request, pk):
     book = get_object_or_404(Book, id=pk)
-    book.author  # on accede a l'auteur pour l'afficher
-    book.publisher  # idem pour l'editeur
 
+    # verifier si l'utilisateur a deja reserve ce livre
     user_has_reserved = False
     if request.user.is_authenticated:
         nb = Reservation.objects.filter(user=request.user, book=book).count()
@@ -130,7 +141,7 @@ def book_detail(request, pk):
     })
 
 
-# reserver un livre (utilisateur connecte seulement)
+# reserver un livre
 @login_required
 def reserve_book(request, pk):
     book = get_object_or_404(Book, id=pk)
@@ -140,15 +151,20 @@ def reserve_book(request, pk):
         messages.error(request, "Ce livre n'est pas disponible.")
         return redirect('catalogue:book_detail', pk=pk)
 
-    # max 5 reservations par utilisateur (exigence fonctionnelle)
+    # verifier que l'user n'a pas deja reserve ce livre
+    deja_reserve = Reservation.objects.filter(user=request.user, book=book)
+    if len(deja_reserve) > 0:
+        messages.warning(request, "Vous avez deja reserve ce livre.")
+        return redirect('catalogue:book_detail', pk=pk)
+
+    # verifier le quota (max 5)
     nb_reservations = Reservation.objects.filter(user=request.user).count()
     if nb_reservations >= 5:
         messages.error(request, "Vous avez atteint la limite de 5 reservations.")
         return redirect('catalogue:book_detail', pk=pk)
 
-    # creer la reservation
     Reservation.objects.create(user=request.user, book=book)
-    messages.success(request, '"' + book.title + '" a ete reserve avec succes.')
+    messages.success(request, '"' + book.title + '" a ete reserve !')
     return redirect('catalogue:my_reservations')
 
 
@@ -156,24 +172,23 @@ def reserve_book(request, pk):
 @login_required
 def cancel_reservation(request, pk):
     reservation = get_object_or_404(Reservation, book__pk=pk, user=request.user)
-    titre = reservation.book.title
     reservation.delete()
     messages.success(request, 'Reservation annulee.')
     return redirect('catalogue:my_reservations')
 
 
-# voir mes reservations en cours
+# mes reservations
 @login_required
 def my_reservations(request):
+    # recuperer toutes les reservations de l'utilisateur connecte
     reservations = Reservation.objects.filter(user=request.user)
     return render(request, 'catalogue/my_reservations.html', {
         'reservations': reservations,
     })
 
 
-# inscription d'un nouvel utilisateur
+# inscription
 def register_view(request):
-    # si deja connecte on redirige vers l'accueil
     if request.user.is_authenticated:
         return redirect('catalogue:home')
 
@@ -181,8 +196,8 @@ def register_view(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # connexion automatique apres inscription
-            messages.success(request, 'Bienvenue ' + user.username + ' ! Compte cree avec succes.')
+            login(request, user)
+            messages.success(request, 'Bienvenue ' + user.username + ' !')
             return redirect('catalogue:home')
     else:
         form = RegisterForm()

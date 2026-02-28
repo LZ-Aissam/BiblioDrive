@@ -5,7 +5,7 @@
 {% block content %}
 
 <h1 class="text-2xl font-bold text-gray-800 mb-2">Mes reservations</h1>
-<p class="text-sm text-gray-500 mb-4">{{ reservations|length }}/5 reservation{{ reservations|length|pluralize }} en cours</p>
+<p class="text-sm text-gray-500 mb-4">{{ reservations|length }} / 5 reservation{{ reservations|length|pluralize }}</p>
 
 {% if reservations %}
 <div class="bg-white rounded shadow mb-4">
@@ -15,7 +15,7 @@
                 <th class="px-4 py-3 text-left">Livre</th>
                 <th class="px-4 py-3 text-left">Auteur</th>
                 <th class="px-4 py-3 text-left">Date</th>
-                <th class="px-4 py-3 text-left">Action</th>
+                <th class="px-4 py-3 text-left">Annuler</th>
             </tr>
         </thead>
         <tbody>
@@ -31,7 +31,9 @@
                 <td class="px-4 py-2">
                     <form method="post" action="{% url 'catalogue:cancel_reservation' resa.book.pk %}">
                         {% csrf_token %}
-                        <button type="submit" class="text-red-500 hover:underline text-xs">Annuler</button>
+                        <button type="submit" class="text-red-500 hover:underline text-xs bg-transparent border-0 cursor-pointer p-0">
+                            Annuler
+                        </button>
                     </form>
                 </td>
             </tr>
@@ -41,7 +43,7 @@
 </div>
 {% else %}
 <div class="bg-white p-6 rounded shadow text-center text-gray-500 mb-4">
-    <p>Aucune reservation en cours.</p>
+    <p>Vous n'avez aucune reservation.</p>
 </div>
 {% endif %}
 
