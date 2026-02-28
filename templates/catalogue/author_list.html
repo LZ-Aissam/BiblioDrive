@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des auteurs{% endblock %}
+
+{% block content %}
+<section class="mb-6">
+    <h1 class="text-3xl font-bold text-brand-dark mb-1">Liste des auteurs</h1>
+    <p class="text-gray-500">{{ authors|length }} auteur{{ authors|length|pluralize }} enregistre{{ authors|length|pluralize }}</p>
+</section>
+
+<section class="bg-white rounded-xl shadow p-6 mb-6">
+    <form method="get" class="flex gap-4 items-end">
+        <div class="flex-1">
+            <label for="q" class="block text-sm font-medium text-gray-600 mb-1">Rechercher un auteur</label>
+            <input type="text" name="q" id="q" value="{{ query }}" placeholder="Nom de l'auteur..."
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light">
+        </div>
+        <button type="submit" class="bg-brand-dark text-white px-6 py-2 rounded-lg hover:bg-brand-light transition-colors">
+            Rechercher
+        </button>
+    </form>
+</section>
+
+{% if authors %}
+<div class="bg-white rounded-xl shadow overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-brand-dark text-white">
+            <tr>
+                <th class="px-6 py-4 text-left font-semibold">ID</th>
+                <th class="px-6 py-4 text-left font-semibold">Nom de l'auteur</th>
+                <th class="px-6 py-4 text-left font-semibold">Annee de naissance</th>
+                <th class="px-6 py-4 text-left font-semibold">Livres</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for author in authors %}
+            <tr class="border-b border-brand-beige/50 hover:bg-orange-50/50 transition-colors">
+                <td class="px-6 py-3 text-gray-400 text-sm">{{ author.id }}</td>
+                <td class="px-6 py-3 font-medium">
+                    <a href="{% url 'catalogue:author_detail' author.pk %}" class="text-brand-dark hover:text-brand-light hover:underline">
+                        {{ author.author }}
+                    </a>
+                </td>
+                <td class="px-6 py-3">{{ author.year_born|default:"-" }}</td>
+                <td class="px-6 py-3 text-gray-500 text-sm">{{ author.books.count }} livre{{ author.books.count|pluralize }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="bg-white rounded-xl p-10 text-center shadow text-gray-500">
+    <p class="mb-2">Aucun auteur trouve.</p>
+    {% if query %}<p><a href="{% url 'catalogue:author_list' %}" class="text-brand-dark hover:underline">Effacer la recherche</a></p>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

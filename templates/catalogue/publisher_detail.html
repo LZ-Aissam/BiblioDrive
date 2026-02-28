@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ publisher.name }}{% endblock %}
+
+{% block content %}
+<section class="mb-6">
+    <a href="{% url 'catalogue:publisher_list' %}" class="text-brand-dark hover:text-brand-light text-sm">&larr; Retour aux editeurs</a>
+</section>
+
+<div class="bg-white rounded-xl shadow p-8 mb-6">
+    <h1 class="text-3xl font-bold text-brand-dark mb-4">{{ publisher.name }}</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+        {% if publisher.company_name %}
+        <div><span class="font-medium text-gray-700">Raison sociale :</span> {{ publisher.company_name }}</div>
+        {% endif %}
+        {% if publisher.address %}
+        <div><span class="font-medium text-gray-700">Adresse :</span> {{ publisher.address }}</div>
+        {% endif %}
+        {% if publisher.city %}
+        <div><span class="font-medium text-gray-700">Ville :</span> {{ publisher.city }} {% if publisher.zip_code %}({{ publisher.zip_code }}){% endif %}</div>
+        {% endif %}
+        {% if publisher.telephone %}
+        <div><span class="font-medium text-gray-700">Telephone :</span> {{ publisher.telephone }}</div>
+        {% endif %}
+        {% if publisher.fax %}
+        <div><span class="font-medium text-gray-700">Fax :</span> {{ publisher.fax }}</div>
+        {% endif %}
+    </div>
+    {% if publisher.comments %}
+    <div class="mt-4 pt-4 border-t border-brand-beige/50">
+        <p class="text-sm text-gray-600">{{ publisher.comments }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<section>
+    <h2 class="text-xl font-bold text-brand-dark mb-4">Catalogue de cet editeur ({{ books|length }})</h2>
+    {% if books %}
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-brand-dark text-white">
+                <tr>
+                    <th class="px-6 py-4 text-left font-semibold">Titre</th>
+                    <th class="px-6 py-4 text-left font-semibold">Auteur</th>
+                    <th class="px-6 py-4 text-left font-semibold">Genre</th>
+                    <th class="px-6 py-4 text-center font-semibold">Disponibilite</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr class="border-b border-brand-beige/50 hover:bg-orange-50/50 transition-colors">
+                    <td class="px-6 py-3 font-medium">
+                        <a href="{% url 'catalogue:book_detail' book.pk %}" class="text-brand-dark hover:text-brand-light hover:underline">{{ book.title }}</a>
+                    </td>
+                    <td class="px-6 py-3">
+                        <a href="{% url 'catalogue:author_detail' book.author.pk %}" class="text-gray-600 hover:text-brand-dark hover:underline">{{ book.author }}</a>
+                    </td>
+                    <td class="px-6 py-3 text-gray-500">{{ book.get_genre_display }}</td>
+                    <td class="px-6 py-3 text-center">
+                        {% if book.available %}
+                        <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">Disponible</span>
+                        {% else %}
+                        <span class="bg-red-100 text-red-700 text-xs font-semibold px-3 py-1 rounded-full">Indisponible</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl p-10 text-center shadow text-gray-500">
+        <p>Aucun livre enregistre pour cet editeur.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

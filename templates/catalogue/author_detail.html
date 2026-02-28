@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ author.author }}{% endblock %}
+
+{% block content %}
+<section class="mb-6">
+    <a href="{% url 'catalogue:author_list' %}" class="text-brand-dark hover:text-brand-light text-sm">&larr; Retour aux auteurs</a>
+</section>
+
+<div class="bg-white rounded-xl shadow p-8 mb-6">
+    <h1 class="text-3xl font-bold text-brand-dark mb-2">{{ author.author }}</h1>
+    {% if author.year_born %}
+    <p class="text-gray-500">Ne en {{ author.year_born }}</p>
+    {% endif %}
+</div>
+
+<section>
+    <h2 class="text-xl font-bold text-brand-dark mb-4">Livres de cet auteur ({{ books|length }})</h2>
+    {% if books %}
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-brand-dark text-white">
+                <tr>
+                    <th class="px-6 py-4 text-left font-semibold">Titre</th>
+                    <th class="px-6 py-4 text-left font-semibold">Genre</th>
+                    <th class="px-6 py-4 text-left font-semibold">Editeur</th>
+                    <th class="px-6 py-4 text-center font-semibold">Disponibilite</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr class="border-b border-brand-beige/50 hover:bg-orange-50/50 transition-colors">
+                    <td class="px-6 py-3 font-medium">
+                        <a href="{% url 'catalogue:book_detail' book.pk %}" class="text-brand-dark hover:text-brand-light hover:underline">{{ book.title }}</a>
+                    </td>
+                    <td class="px-6 py-3 text-gray-500">{{ book.get_genre_display }}</td>
+                    <td class="px-6 py-3 text-gray-500">
+                        {% if book.publisher %}
+                        <a href="{% url 'catalogue:publisher_detail' book.publisher.pk %}" class="text-brand-dark hover:underline">{{ book.publisher.name }}</a>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td class="px-6 py-3 text-center">
+                        {% if book.available %}
+                        <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">Disponible</span>
+                        {% else %}
+                        <span class="bg-red-100 text-red-700 text-xs font-semibold px-3 py-1 rounded-full">Indisponible</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl p-10 text-center shadow text-gray-500">
+        <p>Aucun livre enregistre pour cet auteur.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

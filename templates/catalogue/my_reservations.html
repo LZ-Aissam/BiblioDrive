@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Mes reservations{% endblock %}
+
+{% block content %}
+<section class="mb-6">
+    <h1 class="text-3xl font-bold text-brand-dark mb-1">Mes reservations</h1>
+    <p class="text-gray-500">
+        {{ reservations|length }}/5 reservation{{ reservations|length|pluralize }} en cours
+    </p>
+</section>
+
+{% if reservations %}
+<div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+    <table class="w-full">
+        <thead class="bg-brand-dark text-white">
+            <tr>
+                <th class="px-6 py-4 text-left font-semibold">Livre</th>
+                <th class="px-6 py-4 text-left font-semibold">Auteur</th>
+                <th class="px-6 py-4 text-left font-semibold">Date de reservation</th>
+                <th class="px-6 py-4 text-center font-semibold">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resa in reservations %}
+            <tr class="border-b border-brand-beige/50 hover:bg-orange-50/50 transition-colors">
+                <td class="px-6 py-3 font-medium">
+                    <a href="{% url 'catalogue:book_detail' resa.book.pk %}" class="text-brand-dark hover:text-brand-light hover:underline">
+                        {{ resa.book.title }}
+                    </a>
+                    {% if resa.book.isbn %}<div class="text-xs text-gray-400">ISBN: {{ resa.book.isbn }}</div>{% endif %}
+                </td>
+                <td class="px-6 py-3 text-gray-600">
+                    <a href="{% url 'catalogue:author_detail' resa.book.author.pk %}" class="hover:text-brand-dark hover:underline">
+                        {{ resa.book.author }}
+                    </a>
+                </td>
+                <td class="px-6 py-3 text-gray-500 text-sm">{{ resa.date_reserved|date:"d/m/Y H:i" }}</td>
+                <td class="px-6 py-3 text-center">
+                    <form method="post" action="{% url 'catalogue:cancel_reservation' resa.book.pk %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="bg-red-100 text-red-600 hover:bg-red-500 hover:text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors">
+                            Annuler
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="bg-white rounded-xl p-10 text-center shadow text-gray-500">
+    <p class="mb-4">Vous n'avez aucune reservation en cours.</p>
+    <a href="{% url 'catalogue:book_list' %}?disponible=1" class="bg-brand-dark text-white px-6 py-2 rounded-lg hover:bg-brand-light transition-colors text-sm">
+        Parcourir les livres disponibles
+    </a>
+</div>
+{% endif %}
+
+<div class="bg-brand-beige/30 border border-brand-beige rounded-xl p-4 text-sm text-brand-dark">
+    <a href="{% url 'catalogue:book_list' %}?disponible=1" class="font-medium hover:underline">Parcourir les livres disponibles &rarr;</a>
+</div>
+{% endblock %}
